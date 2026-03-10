@@ -26,14 +26,19 @@ namespace VeterinariaWeb.Controllers
             var categorias = obtenerCategorias();
             ViewBag.Categorias = new SelectList(categorias, "ID", "Nombre");
             return View(new Producto());
-        }
-
+        }     
 
         [HttpPost]
         public IActionResult Create(Producto producto)
         {
             var exito = CrearProducto(producto);
             return RedirectToAction("Index");
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var productoBuscado = obtenerProductoPorId(id);
+            return View(productoBuscado);
         }
 
         #region . Private methods .
@@ -131,7 +136,7 @@ namespace VeterinariaWeb.Controllers
                 ID = lector.GetInt32(0),
                 Nombre = lector.GetString(1),
                 Descripcion = lector.GetString(2),
-                Imagen = lector.GetString(3),
+                Imagen = lector["PathImagen"] == DBNull.Value ? "": lector.GetString(3),
                 Precio = lector.GetDecimal(4),
                 CategoriaID = lector.GetInt32(5),
                 Categoria = new Categoria()
