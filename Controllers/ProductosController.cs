@@ -9,10 +9,18 @@ namespace VeterinariaWeb.Controllers
     {
         private readonly string cadenaConexion = "Server=(localdb)\\AndresRuiz;Database=VETERINARIA;User Id=AndresRuiz;Password=12345;TrustServerCertificate=true";
 
-        public IActionResult Index()
+        public IActionResult Index(int page = 1)
         {
             var listaProductos = obtenerProductos();
-            return View(listaProductos);
+            int registrosPorPagina = 5;
+            int totalProductos = listaProductos.Count;
+            int cantidadPaginas = Convert.ToInt32(Math.Ceiling((double)totalProductos / registrosPorPagina));
+
+            int registrosOmitir = registrosPorPagina * (page - 1) ;
+
+            ViewBag.paginas = cantidadPaginas;
+
+            return View(listaProductos.Skip(registrosOmitir).Take(registrosPorPagina));
         }
 
         public IActionResult Detail(int id)
@@ -31,14 +39,25 @@ namespace VeterinariaWeb.Controllers
         [HttpPost]
         public IActionResult Create(Producto producto)
         {
-            var exito = CrearProducto(producto);
+            var exito = CrearProducto(producto);         
             return RedirectToAction("Index");
         }
 
         public IActionResult Edit(int id)
         {
             var productoBuscado = obtenerProductoPorId(id);
+            var categorias = obtenerCategorias();
+            ViewBag.Categorias = new SelectList(categorias, "ID", "Nombre");
             return View(productoBuscado);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Producto producto)
+        {
+            var exito = ActualizarProducto(producto);
+            if(exito)
+                return RedirectToAction("Detail", new{id = producto.ID});
+            return View(producto);
         }
 
         #region . Private methods .
@@ -122,6 +141,25 @@ namespace VeterinariaWeb.Controllers
                     comando.Parameters.AddWithValue("@descripcion", producto.Descripcion);
                     comando.Parameters.AddWithValue("@categoria", producto.CategoriaID);
                     comando.Parameters.AddWithValue("@precio", producto.Precio);
+                    conexion.Open();
+                    exito = comando.ExecuteNonQuery() > 0;
+                }
+            }
+            return exito;
+        }
+
+        private bool ActualizarProducto(Producto producto)
+        {
+            var exito = false;
+            using (var conexion = new SqlConnection(cadenaConexion))
+            {
+                using (var comando = new SqlCommand("Update Productos set Nombre = @nombre, Descripcion = @descripcion, Precio = @precio, CategoriaID = @categoria where ID = @id", conexion))
+                {                   
+                    comando.Parameters.AddWithValue("@nombre", producto.Nombre);
+                    comando.Parameters.AddWithValue("@descripcion", producto.Descripcion);                   
+                    comando.Parameters.AddWithValue("@precio", producto.Precio);
+                    comando.Parameters.AddWithValue("@categoria", producto.CategoriaID);
+                    comando.Parameters.AddWithValue("@id", producto.ID);
                     conexion.Open();
                     exito = comando.ExecuteNonQuery() > 0;
                 }
