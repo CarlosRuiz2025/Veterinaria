@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using VeterinariaWeb.Models;
+using VeterinariaWeb.ViewModels;
 
 namespace VeterinariaWeb.Controllers
 {
@@ -42,7 +43,7 @@ namespace VeterinariaWeb.Controllers
         {
             var categorias = obtenerCategorias();
             ViewBag.Categorias = new SelectList(categorias, "ID", "Nombre");
-            return View(new Producto());
+            return View(new ProductoVM());
         }     
 
         [HttpPost]
