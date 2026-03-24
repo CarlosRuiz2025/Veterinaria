@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // INYTECTAR DEPENDENCIAS
-builder.Services.AddScoped<ICategoria, CategoriaMock>();
+builder.Services.AddScoped<ICategoria, CategoriaRepository>();
 builder.Services.AddScoped<IProducto, ProductoRepository>();
 
 var app = builder.Build();
